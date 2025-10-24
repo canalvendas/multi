@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseError } from '@/integrations/supabase/client';
+import { AlertCircle } from 'lucide-react';
 
 export interface Profile {
   id: string;
@@ -25,6 +26,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const SupabaseErrorDisplay = ({ error }: { error: string }) => (
+  <div className="flex items-center justify-center h-screen bg-destructive/10 text-destructive p-6">
+    <div className="text-center max-w-2xl">
+      <AlertCircle className="mx-auto h-12 w-12 mb-4" />
+      <h1 className="text-2xl font-bold mb-2">Erro de Configuração</h1>
+      <p className="text-base">{error}</p>
+    </div>
+  </div>
+);
+
 export const AuthContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -32,6 +43,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = async (user: User) => {
+    if (!supabase) return;
     const { data, error } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, specialty, crp, phone, address, avatar_url')
@@ -63,6 +75,11 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   };
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
@@ -81,6 +98,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       subscription.unsubscribe();
     };
   }, []);
+
+  if (supabaseError) {
+    return <SupabaseErrorDisplay error={supabaseError} />;
+  }
 
   const value = {
     session,
