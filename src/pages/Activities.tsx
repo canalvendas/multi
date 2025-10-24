@@ -47,6 +47,7 @@ const Activities = () => {
     return <div className="p-4 md:p-6 text-center"><p>Complete seu perfil para encontrar atividades.</p></div>;
   }
 
+  const therapistName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
   const specialtyActivities = activitiesData.find(s => s.specialty === profile.specialty);
   const diagnosesForSpecialty = specialtyActivities ? specialtyActivities.diagnoses : [];
 
@@ -100,7 +101,13 @@ const Activities = () => {
           <CardDescription>Selecione o paciente e as demandas para gerar sugestões de atividades para a sua especialidade: <span className="font-semibold text-primary">{profile.specialty}</span>.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ActivityPlanForm onSavePlan={handleSavePlan} diagnoses={diagnosesForSpecialty} patients={patients} />
+          <ActivityPlanForm 
+            onSavePlan={handleSavePlan} 
+            diagnoses={diagnosesForSpecialty} 
+            patients={patients} 
+            specialty={profile.specialty}
+            therapistName={therapistName}
+          />
         </CardContent>
       </Card>
 

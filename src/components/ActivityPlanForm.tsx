@@ -17,9 +17,11 @@ interface ActivityPlanFormProps {
   onSavePlan: (data: { patientId: string; content: string }) => void;
   diagnoses: Diagnosis[];
   patients: Patient[];
+  specialty: string;
+  therapistName: string;
 }
 
-export const ActivityPlanForm = ({ onSavePlan, diagnoses, patients }: ActivityPlanFormProps) => {
+export const ActivityPlanForm = ({ onSavePlan, diagnoses, patients, specialty, therapistName }: ActivityPlanFormProps) => {
   const [planContent, setPlanContent] = useState("");
   const [selectedPatientId, setSelectedPatientId] = useState("");
   const [selectedDemands, setSelectedDemands] = useState<Demand[]>([]);
@@ -43,23 +45,30 @@ export const ActivityPlanForm = ({ onSavePlan, diagnoses, patients }: ActivityPl
     }
 
     const patientName = patients.find(p => p.id === selectedPatientId)?.name || "";
-    let content = `PLANO DE ATIVIDADES SUGERIDAS\n\n`;
+    
+    let content = `PLANO DE ATIVIDADES - ${specialty.toUpperCase()}\n\n`;
     content += `Paciente: ${patientName}\n`;
     content += `Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
-    content += `Foco Terapêutico: ${selectedDemands.map(d => d.name).join(', ')}\n\n`;
-    content += `--------------------------------------------------\n\n`;
+    content += `Terapeuta Responsável: ${therapistName}\n\n`;
+    
+    content += `1. FOCO TERAPÊUTICO (DEMANDAS SELECIONADAS):\n`;
+    selectedDemands.forEach(demand => {
+      content += `   - ${demand.name}\n`;
+    });
+    content += `\n`;
+
+    content += `2. SUGESTÕES DE ATIVIDADES:\n\n`;
 
     selectedDemands.forEach(demand => {
-      content += `PARA A DEMANDA: ${demand.name.toUpperCase()}\n\n`;
-      demand.activities.forEach((activity, index) => {
-        content += `${index + 1}. Atividade: ${activity.title}\n`;
-        content += `   - Descrição: ${activity.description}\n`;
-        content += `   - Materiais: ${activity.materials}\n\n`;
+      content += `   PARA A DEMANDA: ${demand.name.toUpperCase()}\n\n`;
+      demand.activities.forEach((activity) => {
+        content += `   - Atividade: ${activity.title}\n`;
+        content += `     - Descrição: ${activity.description}\n`;
+        content += `     - Materiais: ${activity.materials}\n\n`;
       });
-      content += `--------------------------------------------------\n\n`;
     });
 
-    setPlanContent(content);
+    setPlanContent(content.trim());
     toast.success("Plano de atividades gerado com sucesso!");
   };
 
