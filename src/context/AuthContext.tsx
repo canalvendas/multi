@@ -87,7 +87,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     return () => {
       subscription.unsubscribe();
     };
-  }, [user]);
+  }, []);
 
   const value = {
     session,

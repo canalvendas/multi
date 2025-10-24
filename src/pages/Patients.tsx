@@ -35,7 +35,7 @@ const Patients = () => {
 
     if (error) {
       console.error("Erro ao buscar pacientes:", error);
-      const errorMessage = "Erro ao carregar pacientes. Verifique sua conexão e tente novamente.";
+      const errorMessage = `Erro ao carregar pacientes: ${error.message}`;
       toast.error(errorMessage);
       setFetchError(errorMessage);
     } else {
