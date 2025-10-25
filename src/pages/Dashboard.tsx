@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Appointment } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { user, profile, loading: authLoading } = useAuth();
@@ -16,12 +17,13 @@ const Dashboard = () => {
   const [patientCount, setPatientCount] = useState(0);
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (authLoading) return;
 
     if (!user) {
-      setLoading(false);
+      navigate("/login");
       return;
     }
 
@@ -29,6 +31,8 @@ const Dashboard = () => {
 
     const fetchDashboardData = async () => {
       try {
+        setLoading(true);
+        
         // Fetch appointments for today
         const { data: appointmentsData, error: appointmentsError } = await supabase
           .from("appointments")
@@ -63,28 +67,27 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, [user, authLoading]);
+  }, [user, authLoading, navigate]);
 
+  // Se estiver carregando autenticação
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full p-6">
+      <div className="flex items-center justify-center h-screen">
         <p>Carregando autenticação...</p>
       </div>
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-full p-6">
-        <p>Carregando dashboard...</p>
-      </div>
-    );
+  // Se não tem usuário, redireciona para login
+  if (!user) {
+    return null;
   }
 
-  if (!user) {
+  // Se estiver carregando dados do dashboard
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-full p-6">
-        <p>Por favor, faça login para acessar o dashboard.</p>
+      <div className="flex items-center justify-center h-screen">
+        <p>Carregando dashboard...</p>
       </div>
     );
   }
@@ -127,7 +130,7 @@ const Dashboard = () => {
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Próximos Atendimentos</h2>
-          <Button variant="link" className="text-primary p-0 h-auto">
+          <Button variant="link" className="text-primary p-0 h-auto" onClick={() => navigate("/agenda")}>
             Ver todos
           </Button>
         </div>
@@ -162,19 +165,34 @@ const Dashboard = () => {
       <section className="relative">
         <h2 className="text-xl font-semibold mb-4">Acesso Rápido</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button variant="outline" className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
+          <Button 
+            variant="outline" 
+            className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm"
+            onClick={() => navigate("/patients")}
+          >
             <Users className="h-7 w-7 mb-2 text-primary" />
             Pacientes
           </Button>
-          <Button variant="outline" className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
+          <Button 
+            variant="outline" 
+            className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm"
+            onClick={() => navigate("/agenda")}
+          >
             <CalendarDays className="h-7 w-7 mb-2 text-primary" />
             Agenda
           </Button>
-          <Button variant="outline" className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
+          <Button 
+            variant="outline" 
+            className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm"
+            onClick={() => navigate("/reports")}
+          >
             <ClipboardList className="h-7 w-7 mb-2 text-primary" />
             Relatórios
           </Button>
-          <Button variant="outline" className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm">
+          <Button 
+            variant="outline" 
+            className="h-28 flex flex-col items-center justify-center text-md font-medium text-foreground hover:bg-accent transition-colors duration-200 shadow-sm"
+          >
             <MessageSquare className="h-7 w-7 mb-2 text-primary" />
             Mensagens
           </Button>
