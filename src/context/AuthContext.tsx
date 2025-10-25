@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
@@ -27,9 +28,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<any | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchProfile = useCallback(async (currentUser: any) => {
-    if (!supabase) return;
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -65,15 +66,45 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   }, [user, fetchProfile]);
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false);
-      return;
-    }
-
     let mounted = true;
 
+    const initializeAuth = async () => {
+      if (!mounted) return;
+      
+      try {
+        // Verificar sessão atual
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+        
+        if (currentSession && mounted) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          await fetchProfile(currentSession.user);
+        }
+        
+        if (mounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
+      
+      console.log('Auth state changed:', _event);
       
       setSession(session);
       const currentUser = session?.user ?? null;
@@ -84,36 +115,26 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       } else {
         setProfile(null);
       }
-      setLoading(false);
+      
+      // Redirecionar após mudança de estado de autenticação
+      if (!session && window.location.pathname !== '/login') {
+        navigate('/login');
+      } else if (session && window.location.pathname === '/login') {
+        navigate('/dashboard');
+      }
+      
+      if (mounted) {
+        setLoading(false);
+      }
     });
 
-    // Verificar sessão atual
-    const checkSession = async () => {
-      try {
-        if (!mounted) return;
-        
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (currentSession && mounted) {
-          setSession(currentSession);
-          setUser(currentSession.user);
-          await fetchProfile(currentSession.user);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    checkSession();
+    initializeAuth();
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [fetchProfile]);
+  }, [fetchProfile, navigate]);
 
   const value = {
     session,

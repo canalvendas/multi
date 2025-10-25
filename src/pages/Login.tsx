@@ -16,8 +16,7 @@ const Login = () => {
     }
   }, [session, navigate]);
 
-  // Se estiver carregando ou se já tem sessão, não mostra o formulário
-  if (loading || session) {
+  if (loading) {
     return (
       <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
         <div className="flex items-center justify-center py-12">
@@ -28,7 +27,7 @@ const Login = () => {
               </div>
               <h1 className="text-3xl font-bold">Carregando...</h1>
               <p className="text-balance text-muted-foreground">
-                {loading ? "Verificando autenticação..." : "Redirecionando..."}
+                Verificando autenticação...
               </p>
             </div>
           </div>
