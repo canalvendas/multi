@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase, supabaseError } from '@/integrations/supabase/client';
 import { AlertCircle } from 'lucide-react';
@@ -42,37 +42,41 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (currentUser: User) => {
+  const fetchProfile = useCallback(async (currentUser: User) => {
     if (!supabase) return;
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, first_name, last_name, specialty, crp, phone, address, avatar_url')
-      .eq('id', currentUser.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, specialty, crp, phone, address, avatar_url')
+        .eq('id', currentUser.id)
+        .single();
 
-    if (error) {
-      console.error('Error fetching profile:', error);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        setProfile(null);
+      } else if (data) {
+        setProfile({
+          id: data.id,
+          firstName: data.first_name,
+          lastName: data.last_name,
+          specialty: data.specialty,
+          crp: data.crp,
+          phone: data.phone,
+          address: data.address,
+          avatarUrl: data.avatar_url,
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching profile:', error);
       setProfile(null);
     }
-    if (data) {
-      setProfile({
-        id: data.id,
-        firstName: data.first_name,
-        lastName: data.last_name,
-        specialty: data.specialty,
-        crp: data.crp,
-        phone: data.phone,
-        address: data.address,
-        avatarUrl: data.avatar_url,
-      });
-    }
-  };
+  }, []);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (user) {
       await fetchProfile(user);
     }
-  };
+  }, [user, fetchProfile]);
 
   useEffect(() => {
     if (!supabase) {
@@ -80,7 +84,11 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       return;
     }
 
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
@@ -96,8 +104,10 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     // Verificar sessão atual
     const checkSession = async () => {
       try {
+        if (!mounted) return;
+        
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        if (currentSession) {
+        if (currentSession && mounted) {
           setSession(currentSession);
           setUser(currentSession.user);
           await fetchProfile(currentSession.user);
@@ -105,16 +115,19 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       } catch (error) {
         console.error('Error checking session:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     checkSession();
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   if (supabaseError) {
     return <SupabaseErrorDisplay error={supabaseError} />;

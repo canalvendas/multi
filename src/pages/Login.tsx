@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -9,14 +9,17 @@ import { Logo } from "@/components/Logo";
 const Login = () => {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     if (session) {
       navigate("/dashboard");
+    } else {
+      setAuthLoading(false);
     }
   }, [session, navigate]);
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
         <div className="flex items-center justify-center py-12">

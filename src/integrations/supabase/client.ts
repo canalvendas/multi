@@ -13,7 +13,13 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.error(supabaseError);
 } else {
   try {
-    supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
   } catch (e) {
     supabaseError = `Erro ao inicializar o cliente Supabase: ${e instanceof Error ? e.message : String(e)}`;
     console.error(supabaseError);
