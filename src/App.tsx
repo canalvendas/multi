@@ -8,13 +8,13 @@ import { AuthContextProvider } from "./context/AuthContext";
 // Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Agenda from "./pages/Agenda";
 import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Activities from "./pages/Activities";
 import NotFound from "./pages/NotFound";
+import Index from "./pages/Index";
 
 // Layout
 import AppLayout from "./components/AppLayout";
@@ -34,7 +34,7 @@ const App = () => (
 
           {/* Rotas Privadas com Layout */}
           <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/patients" element={<Patients />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/reports" element={<Reports />} />
