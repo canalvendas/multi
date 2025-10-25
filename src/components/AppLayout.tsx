@@ -17,14 +17,14 @@ const AppLayout = () => {
 
   if (loading) {
     return (
-        <div className="flex items-center justify-center h-screen">
-            <p>Carregando...</p>
-        </div>
+      <div className="flex items-center justify-center h-screen">
+        <p>Carregando...</p>
+      </div>
     );
   }
 
   if (!user) {
-      return null;
+    return null;
   }
 
   return (

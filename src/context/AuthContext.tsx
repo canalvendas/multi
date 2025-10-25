@@ -42,12 +42,12 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (user: User) => {
+  const fetchProfile = async (currentUser: User) => {
     if (!supabase) return;
     const { data, error } = await supabase
       .from('profiles')
       .select('id, first_name, last_name, specialty, crp, phone, address, avatar_url')
-      .eq('id', user.id)
+      .eq('id', currentUser.id)
       .single();
 
     if (error) {
@@ -80,7 +80,6 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       return;
     }
 
-    setLoading(true);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       const currentUser = session?.user ?? null;
@@ -93,6 +92,19 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
       }
       setLoading(false);
     });
+
+    // Verificar sessão atual
+    const checkSession = async () => {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession) {
+        setSession(currentSession);
+        setUser(currentSession.user);
+        await fetchProfile(currentSession.user);
+      }
+      setLoading(false);
+    };
+
+    checkSession();
 
     return () => {
       subscription.unsubscribe();

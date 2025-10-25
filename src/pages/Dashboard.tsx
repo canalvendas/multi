@@ -8,49 +8,88 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Appointment, Patient } from "@/types";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [nextAppointments, setNextAppointments] = useState<Appointment[]>([]);
   const [patientCount, setPatientCount] = useState(0);
   const [todayAppointmentCount, setTodayAppointmentCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (authLoading) return;
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const today = format(new Date(), "yyyy-MM-dd");
 
     const fetchDashboardData = async () => {
-      // Fetch appointments for today
-      const { data: appointmentsData, error: appointmentsError } = await supabase
-        .from("appointments")
-        .select("*, patients(name, avatar_url)")
-        .eq("user_id", user.id)
-        .eq("date", today)
-        .order("time", { ascending: true });
+      try {
+        // Fetch appointments for today
+        const { data: appointmentsData, error: appointmentsError } = await supabase
+          .from("appointments")
+          .select("*, patients(name, avatar_url)")
+          .eq("user_id", user.id)
+          .eq("date", today)
+          .order("time", { ascending: true });
 
-      if (appointmentsError) console.error("Error fetching appointments:", appointmentsError);
-      else {
-        setNextAppointments(appointmentsData as any);
-        setTodayAppointmentCount(appointmentsData.length);
+        if (appointmentsError) {
+          console.error("Error fetching appointments:", appointmentsError);
+        } else {
+          setNextAppointments(appointmentsData as any);
+          setTodayAppointmentCount(appointmentsData.length);
+        }
+
+        // Fetch total patient count
+        const { count, error: patientsError } = await supabase
+          .from("patients")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
+
+        if (patientsError) {
+          console.error("Error fetching patient count:", patientsError);
+        } else {
+          setPatientCount(count || 0);
+        }
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      } finally {
+        setLoading(false);
       }
-
-      // Fetch total patient count
-      const { count, error: patientsError } = await supabase
-        .from("patients")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
-
-      if (patientsError) console.error("Error fetching patient count:", patientsError);
-      else setPatientCount(count || 0);
     };
 
     fetchDashboardData();
-  }, [user]);
+  }, [user, authLoading]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Carregando dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>Por favor, faça login para acessar o dashboard.</p>
+      </div>
+    );
+  }
+
+  const displayName = profile 
+    ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() 
+    : user.email 
+    ? user.email.split('@')[0] 
+    : 'Usuário';
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+      <h1 className="text-3xl font-bold">Bem-vindo, {displayName}</h1>
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
