@@ -1,12 +1,12 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 // Usando variáveis de ambiente para maior segurança
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Verificação de variáveis de ambiente
-let supabase: SupabaseClient | null = null;
-let supabaseError: string | null = null;
+let supabase = null;
+let supabaseError = null;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   supabaseError = 'As variáveis de ambiente do Supabase (VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY) não estão configuradas. O aplicativo não pode se conectar ao banco de dados. Por favor, verifique as instruções no arquivo README.md e configure as variáveis no seu ambiente de deploy (Vercel).';
@@ -26,6 +26,5 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   }
 }
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// Exportando o cliente e o erro
 export { supabase, supabaseError };

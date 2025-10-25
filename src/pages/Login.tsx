@@ -57,35 +57,38 @@ const Login = () => {
               Acesse sua conta para continuar.
             </p>
           </div>
-          <Auth
-            supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
-            providers={[]}
-            theme="light"
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: 'Seu email',
-                  password_label: 'Sua senha',
-                  button_label: 'Entrar',
-                  social_provider_text: 'Entrar com {{provider}}',
-                  link_text: 'Já tem uma conta? Entre',
+          <div className="grid gap-4">
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              providers={[]}
+              theme="light"
+              redirectTo={window.location.origin}
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: 'Seu email',
+                    password_label: 'Sua senha',
+                    button_label: 'Entrar',
+                    social_provider_text: 'Entrar com {{provider}}',
+                    link_text: 'Já tem uma conta? Entre',
+                  },
+                  sign_up: {
+                    email_label: 'Seu email',
+                    password_label: 'Sua senha',
+                    button_label: 'Cadastrar',
+                    social_provider_text: 'Cadastrar com {{provider}}',
+                    link_text: 'Não tem uma conta? Cadastre-se',
+                  },
+                  forgotten_password: {
+                    email_label: 'Seu email',
+                    button_label: 'Enviar instruções',
+                    link_text: 'Esqueceu sua senha?',
+                  },
                 },
-                sign_up: {
-                  email_label: 'Seu email',
-                  password_label: 'Sua senha',
-                  button_label: 'Cadastrar',
-                  social_provider_text: 'Cadastrar com {{provider}}',
-                  link_text: 'Não tem uma conta? Cadastre-se',
-                },
-                forgotten_password: {
-                  email_label: 'Seu email',
-                  button_label: 'Enviar instruções',
-                  link_text: 'Esqueceu sua senha?',
-                },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
