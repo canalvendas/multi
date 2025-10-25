@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/Logo";
 
 const Login = () => {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,6 +15,33 @@ const Login = () => {
       navigate("/dashboard");
     }
   }, [session, navigate]);
+
+  if (loading) {
+    return (
+      <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+        <div className="flex items-center justify-center py-12">
+          <div className="mx-auto grid w-[350px] gap-6">
+            <div className="grid gap-2 text-center">
+              <div className="mb-4 flex justify-center">
+                <Logo />
+              </div>
+              <h1 className="text-3xl font-bold">Carregando...</h1>
+              <p className="text-balance text-muted-foreground">
+                Verificando autenticação...
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="hidden bg-muted lg:block">
+          <img
+            src="/placeholder.svg"
+            alt="Uma imagem inspiradora mostrando um ambiente terapêutico acolhedor."
+            className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (session) {
     return null; // Evita renderizar o formulário durante o redirecionamento

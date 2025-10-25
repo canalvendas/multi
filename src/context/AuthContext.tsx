@@ -95,13 +95,18 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
     // Verificar sessão atual
     const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (currentSession) {
-        setSession(currentSession);
-        setUser(currentSession.user);
-        await fetchProfile(currentSession.user);
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession) {
+          setSession(currentSession);
+          setUser(currentSession.user);
+          await fetchProfile(currentSession.user);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     checkSession();

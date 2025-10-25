@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Appointment, Patient } from "@/types";
+import { Appointment } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -65,9 +65,17 @@ const Dashboard = () => {
     fetchDashboardData();
   }, [user, authLoading]);
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full p-6">
+        <p>Carregando autenticação...</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full p-6">
         <p>Carregando dashboard...</p>
       </div>
     );
@@ -75,7 +83,7 @@ const Dashboard = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full p-6">
         <p>Por favor, faça login para acessar o dashboard.</p>
       </div>
     );
