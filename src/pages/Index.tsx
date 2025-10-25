@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { User, CalendarDays, Plus, ChevronRight, ClipboardList, MessageSquare, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Appointment } from "@/types";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const { user, profile, loading: authLoading } = useAuth();
-  const [nextAppointments, setNextAppointments] = useState<Appointment[]>([]);
-  const [patientCount, setPatientCount] = useState(0);
-  const [todayAppointmentCount, setTodayAppointmentCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [nextAppointments, setNextAppointments] = React.useState([]);
+  const [patientCount, setPatientCount] = React.useState(0);
+  const [todayAppointmentCount, setTodayAppointmentCount] = React.useState(0);
+  const [loading, setLoading] = React.useState(true);
 
   useEffect(() => {
     if (authLoading) return;
@@ -44,8 +43,8 @@ const Dashboard = () => {
         if (appointmentsError) {
           console.error("Error fetching appointments:", appointmentsError);
         } else {
-          setNextAppointments(appointmentsData as any);
-          setTodayAppointmentCount(appointmentsData.length);
+          setNextAppointments(appointmentsData || []);
+          setTodayAppointmentCount(appointmentsData?.length || 0);
         }
 
         // Fetch total patient count
@@ -141,11 +140,11 @@ const Dashboard = () => {
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={appointment.patients.avatar_url || "/placeholder.svg"} alt={appointment.patients.name} />
-                      <AvatarFallback>{appointment.patients.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={appointment.patients?.avatar_url || "/placeholder.svg"} alt={appointment.patients?.name} />
+                      <AvatarFallback>{appointment.patients?.name?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-semibold text-lg">{appointment.patients.name}</p>
+                      <p className="font-semibold text-lg">{appointment.patients?.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {appointment.specialty} • {appointment.time}
                       </p>
