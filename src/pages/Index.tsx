@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { User, CalendarDays, Plus, ChevronRight, ClipboardList, MessageSquare, Users } from "lucide-react";
@@ -13,10 +13,10 @@ import { ptBR } from "date-fns/locale";
 const Dashboard = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [nextAppointments, setNextAppointments] = React.useState([]);
-  const [patientCount, setPatientCount] = React.useState(0);
-  const [todayAppointmentCount, setTodayAppointmentCount] = React.useState(0);
-  const [loading, setLoading] = React.useState(true);
+  const [nextAppointments, setNextAppointments] = useState([]);
+  const [patientCount, setPatientCount] = useState(0);
+  const [todayAppointmentCount, setTodayAppointmentCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
